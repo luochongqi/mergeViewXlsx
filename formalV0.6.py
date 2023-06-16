@@ -15,12 +15,21 @@ app.display_alerts = False
 app.screen_updating = False
 
 # 获取sheet1
-wb = app.books.open('05.xlsx')
+wb = app.books.open('06.xlsx')
 sht = xw.sheets.active
 
 # 获取工作表有多少行数据
 rng = sht.range('A1').expand('table')  # 以第一列为基础，直至遇到第一个空单元格，获取工作表有多少行数据
 sht_rows = rng.rows.count - 1  # 需要排除第一行表头
+
+# 各视图字段在excel中列的索引号
+i_quality_view = ['AA', 'AB']
+i_procure_view = ['V', 'W', 'X', 'Y', 'Z']
+i_sale_view = ['L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U']
+i_storage_view = ['AC', 'AD', 'AE', 'AO', 'AP']
+i_workplan_view = ['AW', 'AX']
+i_mrp_view = ['AF', 'AG', 'AH', 'AI', 'AJ', 'AM', 'AN', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV']
+i_basic_view = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'AK', 'AL']
 
 
 # 主函数
@@ -66,6 +75,79 @@ def grouping(tr_rows):
     return list(range(first_index, last_index, tr_rows))
 
 
+# source_row = f'A{use_index}:K{use_index}'
+# dest_row = f'A{use_fix_index}:K{use_fix_index}'
+# sht.range(source_row).copy(sht.range(dest_row))
+
+# 复制函数——核心函数
+def copy_core(cell, use_index, use_fix_index):
+    source = f'{cell}{use_index}'
+    dest = f'{cell}{use_fix_index}'
+    sht.range(source).copy(sht.range(dest))
+
+
+# 质量视图复制
+def copy_view_quality(use_index, use_fix_index):
+    for i in i_quality_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# 采购视图复制
+def copy_view_procure(use_index, use_fix_index):
+    for i in i_procure_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# 销售视图复制
+def copy_view_sale(use_index, use_fix_index):
+    for i in i_sale_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# 仓储视图复制
+def copy_view_storage(use_index, use_fix_index):
+    for i in i_storage_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# 工作计划视图复制
+def copy_view_workplan(use_index, use_fix_index):
+    for i in i_workplan_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# MRP视图复制
+def copy_view_mrp(use_index, use_fix_index):
+    for i in i_mrp_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# 基本视图复制
+def copy_view_basic(use_index, use_fix_index):
+    for i in i_basic_view:
+        copy_core(i, use_index, use_fix_index)
+
+
+# 复制函数分支流控制函数
+def copy_branch_control(view_num, *args):
+    # 财务视图：0    质量视图：1      采购视图：2      销售试图：3
+    # 仓储视图：4    工作计划视图：5        MRP视图：6     基本视图：7
+    if view_num == 1:
+        copy_view_quality(args[0], args[1])
+    elif view_num == 2:
+        copy_view_procure(args[0], args[1])
+    elif view_num == 3:
+        copy_view_sale(args[0], args[1])
+    elif view_num == 4:
+        copy_view_storage(args[0], args[1])
+    elif view_num == 5:
+        copy_view_workplan(args[0], args[1])
+    elif view_num == 6:
+        copy_view_mrp(args[0], args[1])
+    elif view_num == 7:
+        copy_view_basic(args[0], args[1])
+
+
 # 复制函数
 def copy_to_complete(list_group, tr_rows):
     i = 1  # i的取值范围在0~7，分别对应着8个视图,但是逆序的
@@ -76,9 +158,7 @@ def copy_to_complete(list_group, tr_rows):
             use_fix_index = fix_index + j - 1
             use_index = index + j - 1
             # print(use_index, use_fix_index)
-            source_row = f'A{use_index}:K{use_index}'
-            dest_row = f'A{use_fix_index}:K{use_fix_index}'
-            sht.range(source_row).copy(sht.range(dest_row))
+            copy_branch_control(i, use_index, use_fix_index)
         i = i + 1
     # 删除1 + tr_rows + 1~sht_rows + 1之间的所有行
     for row in range(2 + tr_rows, sht_rows + 2):
@@ -91,7 +171,7 @@ main()
 # sht.range('A1:J1').api.EntireRow.Delete()
 
 # 保存
-wb.save('05-物料业务数据维护报表.xlsx')
+wb.save('06-物料业务数据维护报表.xlsx')
 
 # 退出excel
 app.quit()
