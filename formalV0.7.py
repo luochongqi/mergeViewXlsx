@@ -19,7 +19,7 @@ wb = app.books.open('07.xlsx')
 sht = xw.sheets.active
 
 # 获取工作表有多少行数据
-rng = sht.range('AY1').expand('table')  # 以AY列为基础，直至遇到第一个空单元格，获取工作表有多少行数据
+rng = sht.range('BO1').expand('table')  # 以AY列为基础，直至遇到第一个空单元格，获取工作表有多少行数据
 sht_rows = rng.rows.count - 1  # 需要排除第一行表头
 
 # 各视图字段在excel中列的索引号
@@ -43,7 +43,7 @@ def main():
     # 维护视图数据复制到基本视图
     copy_to_complete(list_group, tr_rows)
     # 删除AY列
-    sht.range('AY:AY').api.EntireColumn.Delete()
+    sht.range('BO:BO').api.EntireColumn.Delete()
 
 
 # 提示消息的输出函数
