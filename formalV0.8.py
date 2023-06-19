@@ -11,6 +11,7 @@ import sys
 import os
 import threading
 from tqdm import tqdm
+import keyboard
 
 # 全局数据，全部为空
 app = None
@@ -51,24 +52,20 @@ def main():
     # 关闭文件
     close_file(filename)
     # 退出程序
-    new_thread1 = threading.Thread(target=thread_exit_auto, name="T1")
-    new_thread2 = threading.Thread(target=thread_exit_hand, name="T2")
+    new_thread1 = threading.Thread(target=thread_exit_hand, name="T1")
+    new_thread1.setDaemon(True)
     new_thread1.start()
-    new_thread2.start()
+    time.sleep(5)
+    sys.exit()
     # new_thread.join()
 
 
 # 自动退出函数
-def thread_exit_auto():
-    time.sleep(5)
-    os._exit(0)
-
-
-# 手动退出函数
 def thread_exit_hand():
-    press_key = input("\n程序执行完毕，按任意键退出程序！（5秒后自动退出）")
-    if press_key != '':
-        sys.exit()
+    print("\n程序执行完毕，按回车键退出程序！（5秒后自动退出）")
+    while True:
+        if keyboard.is_pressed('enter'):
+            os._exit(0)
 
 
 # 提示消息的输出函数
