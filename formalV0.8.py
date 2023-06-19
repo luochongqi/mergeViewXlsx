@@ -53,7 +53,7 @@ def main():
     close_file(filename)
     # 退出程序
     new_thread1 = threading.Thread(target=thread_exit_hand, name="T1")
-    new_thread1.setDaemon(True)
+    new_thread1.setDaemon(True)  # 创建守护线程，当主线程执行完毕时，子线程不管有没有执行完都跟着结束
     new_thread1.start()
     time.sleep(5)
     sys.exit()
