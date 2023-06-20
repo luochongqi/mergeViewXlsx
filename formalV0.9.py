@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-# @Time    : 2023/6/16 22:25 //这里时创建该文件的时间
-# @Author  : Luo HaoYe  //这里写自己的名字
-# @File    : formalV0.8.py  //文件名
+# @Time    : 2023/6/20 13:01 //这里时创建该文件的时间
+# @Author  : Nana Xing  //这里写自己的名字
+# @File    : formalV0.9.py  //文件名
 # @ProjectName: mergeViewXlsx //项目名称
 # @Software: PyCharm //IDE
 import xlwings as xw
@@ -12,6 +12,9 @@ import os
 import threading
 from tqdm import tqdm
 import keyboard
+import pywintypes
+from win32com.client import DispatchEx
+from xlwings._xlwindows import COMRetryObjectWrapper
 
 # 全局数据，全部为空
 app = None
@@ -60,6 +63,21 @@ def main():
     # new_thread.join()
 
 
+# 获得正确运行的excel程序
+def get_excel_app():
+    try:
+        app = xw.App(visible=False, add_book=False)
+        return app
+    except pywintypes.com_error:
+        try:
+            _xl = COMRetryObjectWrapper(DispatchEx("ket.Application"))
+            impl = xw._xlwindows.App(visible=False, add_book=False, xl=_xl)
+            app = xw.App(visible=False, add_book=False, impl=impl)
+            return app
+        except pywintypes.com_error:
+            return None
+
+
 # 自动退出函数
 def thread_exit_hand():
     print("\n程序执行完毕，按回车键退出程序！（5秒后自动退出）")
@@ -91,7 +109,9 @@ def open_file():
     global filename
 
     # 打开excel程序，默认设置：程序可见，只打开不新建工作簿，屏幕更新关闭
-    app = xw.App(visible=False, add_book=False)
+    app = get_excel_app()
+    if not app:
+        procedure_exit(f"打开excel的程序遇到问题，程序即将退出！")
     app.display_alerts = False
     app.screen_updating = False
 
@@ -105,14 +125,14 @@ def open_file():
         f_split_list = filename.split('.')
         if len(f_split_list) < 2 or f_split_list[1] != 'xlsx':
             print(f"文件名后缀发生错误，请检查！")
-            press_key = input(f"\n按'q'键退出程序！按其余任意键程序继续！\n")
+            press_key = input(f"\n输入'q'退出程序！输入其他任意信息程序继续！\n")
             if press_key == 'q':
                 procedure_exit(f'即将退出程序！')
             else:
                 continue
         elif not os.path.exists(filename):
             print(f"该文件不存在！")
-            press_key = input(f"\n按'q'键退出程序！按其余任意键程序继续！\n")
+            press_key = input(f"\n输入'q'退出程序！输入其他任意信息程序继续！\n")
             if press_key == 'q':
                 procedure_exit(f'即将退出程序！')
             else:
