@@ -16,10 +16,10 @@ app.screen_updating = False
 
 # 获取sheet1
 wb = app.books.open('06.xlsx')
-sht = xw.sheets.active
+sht1 = xw.sheets.active
 
 # 获取工作表有多少行数据
-rng = sht.range('A1').expand('table')  # 以第一列为基础，直至遇到第一个空单元格，获取工作表有多少行数据
+rng = sht1.range('A1').expand('table')  # 以第一列为基础，直至遇到第一个空单元格，获取工作表有多少行数据
 sht_rows = rng.rows.count - 1  # 需要排除第一行表头
 
 # 各视图字段在excel中列的索引号
@@ -83,7 +83,7 @@ def grouping(tr_rows):
 def copy_core(cell, use_index, use_fix_index):
     source = f'{cell}{use_index}'
     dest = f'{cell}{use_fix_index}'
-    sht.range(source).copy(sht.range(dest))
+    sht1.range(source).copy(sht1.range(dest))
 
 
 # 质量视图复制
@@ -162,7 +162,7 @@ def copy_to_complete(list_group, tr_rows):
         i = i + 1
     # 删除1 + tr_rows + 1~sht_rows + 1之间的所有行
     for row in range(2 + tr_rows, sht_rows + 2):
-        sht.range('A' + str(2 + tr_rows)).api.EntireRow.Delete()
+        sht1.range('A' + str(2 + tr_rows)).api.EntireRow.Delete()
 
 
 # 调用主函数

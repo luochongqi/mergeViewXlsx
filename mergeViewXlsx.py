@@ -19,7 +19,7 @@ from xlwings._xlwindows import COMRetryObjectWrapper
 # 全局数据，全部为空
 app = None
 wb = None
-sht = None
+sht1 = None
 sht_rows = 0
 filename = ''
 
@@ -49,7 +49,7 @@ def main():
         # 维护视图数据复制到基本视图
         copy_to_complete(list_group, tr_rows)
         # 删除AY列
-        sht.range('BP:BP').api.EntireColumn.Delete()
+        sht1.range('BP:BP').api.EntireColumn.Delete()
         # 输出总用时
         end_time = time.perf_counter() - start_time
         print(f"\n程序总运行时间为：{end_time}s。")
@@ -113,7 +113,7 @@ def open_file():
     # 声明全局变量
     global app
     global wb
-    global sht
+    global sht1
     global sht_rows
     global filename
 
@@ -189,7 +189,7 @@ def grouping(tr_rows):
 def copy_core(cell, use_index, use_fix_index):
     source = f'{cell}{use_index}'
     dest = f'{cell}{use_fix_index}'
-    sht.range(source).copy(sht.range(dest))
+    sht1.range(source).copy(sht1.range(dest))
 
 
 # 视图复制
@@ -234,7 +234,7 @@ def copy_to_complete(list_group, tr_rows):
     print(f"\n删除任务进度：")
     r_items = range(2 + tr_rows, sht_rows + 2)
     for row in tqdm(r_items, desc='处理中', ncols=80):  # 只删除被顶在2 + tr_rows的这一行即可
-        sht.range('A' + str(2 + tr_rows)).api.EntireRow.Delete()
+        sht1.range('A' + str(2 + tr_rows)).api.EntireRow.Delete()
 
 
 # 关闭文件函数
