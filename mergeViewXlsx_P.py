@@ -29,59 +29,102 @@ head_color_font_red = '\033[1;33;40m'  # 红色高亮
 tail_color_font = '\033[0m'
 
 # 各视图字段在excel中列的索引号
-i_quality_view = ['AA', 'AB']
-i_procure_view = ['V', 'W', 'X', 'Y', 'Z']
-i_sale_view = ['L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'AE']
-i_storage_view = ['AC', 'AD', 'AO', 'AP']
-i_workplan_view = ['AW', 'AX']
-i_mrp_view = ['AF', 'AG', 'AH', 'AI', 'AJ', 'AM', 'AN', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV']
-i_basic_view = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'AK', 'AL']
+i_quality_view = []
+i_procure_view = []
+i_sale_view = []
+i_storage_view = []
+i_workplan_view = []
+i_mrp_view = []
+i_basic_view = []
 
 
 # 主函数
 def main():
-    # 源sheet的最终数据的末行计数变量
-    data_row = 2
-    # 打开文件，获得处理数据的总行数
-    sht1_rows = open_file()
-    # 检查正在处理的数据是否都为归档流程的数据
-    check_gd(sht1_rows)
-    # 计时器
-    start_time = time.perf_counter()
-    # 视图的数量
-    views = 8
-    # 获得流程列表、流程详细信息字典
-    flows_list = sht1.range(f'BQ2:BQ{sht1_rows}').value
-    fun_ret_distribute_flow = distribute_flow(flows_list, sht1_rows)
-    tr_rows = get_rows(views, sht1_rows, 1)  # 获得物料业务数据维护的总数量
-    # flow_list = fun_ret_distribute_flow[0]  流程列表
-    flow_dic = fun_ret_distribute_flow[1]
-    # 多流程遍历处理
-    for flow_k, flow_v in flow_dic.items():
-        # 从源sheet将单个流程数据复制到工作sheet中，并获得当前流程处理数据的行数
-        sht2_rows = span_sheet_copy_go(flow_k, flow_v)
-        # 获得当前流程物料业务数据维护的数量
-        distribute_tr_rows = get_rows(views, sht2_rows, 0)
-        # 获得分组
-        list_group = grouping(distribute_tr_rows, sht2_rows)
-        # 维护视图数据复制到基本视图
-        copy_to_complete(list_group, distribute_tr_rows, sht2_rows)
-        # 从工作sheet将已处理的数据复制回源sheet，并更新data_row
-        data_row = span_sheet_copy_come(flow_k, distribute_tr_rows, data_row)
-    # 其余数据处理
-    remaining_data_process(tr_rows, sht1_rows, data_row)
-    # 输出总用时
-    end_time = time.perf_counter() - start_time
-    print(f"\n程序总运行时间为：{end_time}s。")
-    # 关闭文件
-    close_file(filename)
-    # 退出程序
-    new_thread1 = threading.Thread(target=thread_exit_hand, name="T1")
-    new_thread1.daemon = True  # 创建守护线程，当主线程执行完毕时，子线程不管有没有执行完都跟着结束
-    new_thread1.start()
-    time.sleep(5)
-    sys.exit()
-    # new_thread.join()
+    try:
+        # 获取视图索引模板文件
+        get_template()
+        # 源sheet的最终数据的末行计数变量
+        data_row = 2
+        # 打开文件，获得处理数据的总行数
+        sht1_rows = open_file()
+        # 检查正在处理的数据是否都为归档流程的数据
+        check_gd(sht1_rows)
+        # 计时器
+        start_time = time.perf_counter()
+        # 视图的数量
+        views = 8
+        # 获得流程列表、流程详细信息字典
+        flows_list = sht1.range(f'BQ2:BQ{sht1_rows}').value
+        fun_ret_distribute_flow = distribute_flow(flows_list, sht1_rows)
+        tr_rows = get_rows(views, sht1_rows, 1)  # 获得物料业务数据维护的总数量
+        # flow_list = fun_ret_distribute_flow[0]  流程列表
+        flow_dic = fun_ret_distribute_flow[1]
+        # 多流程遍历处理
+        for flow_k, flow_v in flow_dic.items():
+            # 从源sheet将单个流程数据复制到工作sheet中，并获得当前流程处理数据的行数
+            sht2_rows = span_sheet_copy_go(flow_k, flow_v)
+            # 获得当前流程物料业务数据维护的数量
+            distribute_tr_rows = get_rows(views, sht2_rows, 0)
+            # 获得分组
+            list_group = grouping(distribute_tr_rows, sht2_rows)
+            # 维护视图数据复制到基本视图
+            copy_to_complete(list_group, distribute_tr_rows, sht2_rows)
+            # 从工作sheet将已处理的数据复制回源sheet，并更新data_row
+            data_row = span_sheet_copy_come(flow_k, distribute_tr_rows, data_row)
+        # 其余数据处理
+        remaining_data_process(tr_rows, sht1_rows, data_row)
+        # 输出总用时
+        end_time = time.perf_counter() - start_time
+        print(f"\n程序总运行时间为：{end_time}s。")
+        # 关闭文件
+        close_file(filename)
+        # 退出程序
+        new_thread1 = threading.Thread(target=thread_exit_hand, name="T1")
+        new_thread1.daemon = True  # 创建守护线程，当主线程执行完毕时，子线程不管有没有执行完都跟着结束
+        new_thread1.start()
+        time.sleep(5)
+        sys.exit()
+        # new_thread.join()
+    except BaseException:
+        message(f'遭遇到未预设的错误！！！')
+        time.sleep(5)
+        sys.exit()
+
+
+# 获取视图索引模板文件
+def get_template():
+    global i_quality_view
+    global i_procure_view
+    global i_sale_view
+    global i_storage_view
+    global i_workplan_view
+    global i_mrp_view
+    global i_basic_view
+    # 初始化i_views，用于接收lists
+    i_views = [i_quality_view, i_procure_view, i_sale_view, i_storage_view, i_workplan_view, i_mrp_view, i_basic_view]
+    # 打开并读取template.ini文件
+    template_name = 'Config\\template.txt'
+    with open(template_name) as file_object:
+        lines = file_object.readlines()
+    i = 0
+    for line in lines:
+        if line != '\n':
+            line = line.strip()
+            i_views[i] = line.split(' ')
+            i += 1
+    # 为各视图添加字段索引
+    if len(i_views) == 7:
+        i_quality_view = i_views[0]
+        i_procure_view = i_views[1]
+        i_sale_view = i_views[2]
+        i_storage_view = i_views[3]
+        i_workplan_view = i_views[4]
+        i_mrp_view = i_views[5]
+        i_basic_view = i_views[6]
+    else:
+        message(f'错误！template.txt文件出错！')
+        time.sleep(5)
+        sys.exit()
 
 
 # 获得正确运行的excel程序
