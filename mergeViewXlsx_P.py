@@ -10,11 +10,16 @@ import time
 import sys
 import os
 import threading
+import traceback
 from tqdm import tqdm
 import keyboard
 import pywintypes
 from win32com.client import DispatchEx
 from xlwings._xlwindows import COMRetryObjectWrapper
+
+# 全局宏
+APP_ERROR = 1
+NORMAL_ERROR = 0
 
 # 全局数据，全部为空
 app = None
@@ -86,9 +91,8 @@ def main():
         sys.exit()
         # new_thread.join()
     except BaseException:
-        message(f'遭遇到未预设的错误！！！')
-        time.sleep(5)
-        sys.exit()
+        traceback.print_exc()
+        procedure_exit(f'遭遇到未预设的错误！！！', NORMAL_ERROR)
 
 
 # 获取视图索引模板文件
@@ -108,9 +112,12 @@ def get_template():
         lines = file_object.readlines()
     i = 0
     for line in lines:
-        if line != '\n':
+        if i != 7:
             line = line.strip()
-            i_views[i] = line.split(' ')
+            if line != '\n':
+                i_views[i] = line.split(' ')
+            else:
+                i_views[i] = []
             i += 1
     # 为各视图添加字段索引
     if len(i_views) == 7:
@@ -122,9 +129,7 @@ def get_template():
         i_mrp_view = i_views[5]
         i_basic_view = i_views[6]
     else:
-        message(f'错误！template.txt文件出错！')
-        time.sleep(5)
-        sys.exit()
+        procedure_exit(f'错误！template.txt文件出错！', NORMAL_ERROR)
 
 
 # 获得正确运行的excel程序
@@ -156,10 +161,11 @@ def message(statement):
 
 
 # 程序正常退出函数
-def procedure_exit(statement):
+def procedure_exit(statement, error):
     message(statement)
     time.sleep(5)
-    app.kill()
+    if error == 1:
+        app.kill()
     sys.exit()
 
 
@@ -175,7 +181,7 @@ def open_file():
     # 打开excel程序，默认设置：程序可见，只打开不新建工作簿，屏幕更新关闭
     app = get_excel_app()
     if not app:
-        procedure_exit(f"打开excel的程序遇到问题，程序即将退出！")
+        procedure_exit(f"打开excel的程序遇到问题，程序即将退出！", APP_ERROR)
     app.display_alerts = False
     app.screen_updating = False
 
@@ -190,14 +196,14 @@ def open_file():
             message(f"文件名后缀发生错误，请检查！")
             press_key = input(f"\n输入'q'退出程序！输入其他任意信息程序继续！\n")
             if press_key == 'q':
-                procedure_exit(f'即将退出程序！')
+                procedure_exit(f'即将退出程序！', APP_ERROR)
             else:
                 continue
         elif not os.path.exists(filename):
             message(f"该文件不存在！")
             press_key = input(f"\n输入'q'退出程序！输入其他任意信息程序继续！\n")
             if press_key == 'q':
-                procedure_exit(f'即将退出程序！')
+                procedure_exit(f'即将退出程序！', APP_ERROR)
             else:
                 continue
         else:
@@ -219,7 +225,7 @@ def check_gd(in_sht1_rows):
     in_list = in_rng.value
     for i in in_list:
         if i.find('归档') == -1:
-            procedure_exit(f'错误！该批数据中存在非存档流程的数据，程序即将退出！')
+            procedure_exit(f'错误！该批数据中存在非存档流程的数据，程序即将退出！', APP_ERROR)
 
 
 # 其余数据处理
@@ -287,7 +293,7 @@ def get_rows(views, in_sht1_rows, flag):
         else:
             message(f"该流程维护的物料数据数量为：{tr_rows} 条")
     else:
-        procedure_exit(f"错误！不符合维护视图导出报表的规则，程序即将退出！")
+        procedure_exit(f"错误！不符合维护视图导出报表的规则，程序即将退出！", APP_ERROR)
     return tr_rows
 
 
