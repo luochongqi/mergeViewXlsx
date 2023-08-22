@@ -90,6 +90,8 @@ def main():
         time.sleep(5)
         sys.exit()
         # new_thread.join()
+    except SystemExit:
+        pass
     except BaseException:
         traceback.print_exc()
         procedure_exit(f'遭遇到未预设的错误！！！', NORMAL_ERROR)
