@@ -108,7 +108,7 @@ def get_template():
     global i_basic_view
     # 初始化i_views，用于接收lists
     i_views = [i_quality_view, i_procure_view, i_sale_view, i_storage_view, i_workplan_view, i_mrp_view, i_basic_view]
-    # 打开并读取template.ini文件
+    # 打开并读取template.txt文件
     template_name = 'Config\\template.txt'
     with open(template_name) as file_object:
         lines = file_object.readlines()
