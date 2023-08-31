@@ -137,7 +137,7 @@ def get_template():
 # 获得正确运行的excel程序
 def get_excel_app():
     try:
-        in_app = xw.App(visible=False, add_book=False)
+        in_app = xw.App(visible=False, add_book=False)  # 默认使用
         return in_app
     except pywintypes.com_error:
         try:
